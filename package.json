@@ -1,0 +1,40 @@
+{
+  "name": "mcp-helperton",
+  "version": "1.0.0",
+  "description": "MCP Helpy Helperton - A text-based UI for managing MCP servers in Claude Code",
+  "main": "src/index.js",
+  "bin": {
+    "mcp-helperton": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "mcp",
+    "claude",
+    "claude-code",
+    "cli",
+    "tui",
+    "model-context-protocol",
+    "anthropic"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "blessed": "^0.1.81"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/burnsbert/mcp-helperton.git"
+  },
+  "files": [
+    "src/**/*",
+    "LICENSE",
+    "README.md",
+    "INSTALL.md"
+  ]
+}
