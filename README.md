@@ -2,12 +2,23 @@
 
 A text-based UI tool for managing MCP (Model Context Protocol) servers in Claude Code's global configuration.
 
+## Why Use This?
+
+Each enabled MCP server consumes context space in Claude Code. If you have many MCPs configured but only use a few regularly, the unused ones are still taking up valuable context tokens.
+
+**MCP Helpy Helperton lets you:**
+
+- **Maximize context space** by disabling MCPs you're not currently using
+- **Preserve configurations** so you don't lose complex MCP setups (API keys, paths, environment variables)
+- **Quickly re-enable** any MCP when you need it, without manual reconfiguration
+- **Switch between workflows** by enabling different MCP combinations for different tasks
+
 ## Features
 
 - **Visual MCP Management**: See all your enabled and disabled MCP servers in one place
 - **Easy Toggle**: Use arrow keys to navigate and Enter to enable/disable servers
-- **Safe Storage**: Disabled MCPs are stored locally and can be re-enabled anytime
-- **Non-Destructive**: Original MCP configurations are preserved when disabled
+- **Persistent Storage**: Disabled MCPs are stored locally and survive across sessions
+- **Non-Destructive**: Original MCP configurations (including env vars, args, etc.) are fully preserved
 - **Automatic Backup**: Creates a backup of your config on first use
 
 ## Installation
