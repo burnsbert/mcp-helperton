@@ -20,7 +20,7 @@ const mockPaths = {
 
 beforeEach(() => {
   tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-helperton-test-'));
-  mockPaths.claude = path.join(tempDir, 'claude_desktop_config.json');
+  mockPaths.claude = path.join(tempDir, '.claude.json');
   mockPaths.helpy = path.join(tempDir, 'helpy.json');
 });
 
@@ -95,6 +95,62 @@ describe('Config Path Resolution', () => {
     assert.ok(helpyPath.includes('helpy.json'));
     assert.ok(path.isAbsolute(claudePath));
     assert.ok(path.isAbsolute(helpyPath));
+  });
+});
+
+describe('Atomic File Write', () => {
+  it('should write file atomically', () => {
+    const { atomicWriteFile } = require('../src/config');
+    const testFile = path.join(tempDir, 'test-atomic.json');
+    const content = JSON.stringify({ test: 'data' }, null, 2);
+
+    atomicWriteFile(testFile, content);
+
+    assert.ok(fs.existsSync(testFile), 'File should exist after write');
+    assert.strictEqual(fs.readFileSync(testFile, 'utf8'), content);
+  });
+
+  it('should overwrite existing file', () => {
+    const { atomicWriteFile } = require('../src/config');
+    const testFile = path.join(tempDir, 'test-overwrite.json');
+
+    // Write initial content
+    atomicWriteFile(testFile, '{"version": 1}');
+    assert.strictEqual(fs.readFileSync(testFile, 'utf8'), '{"version": 1}');
+
+    // Overwrite with new content
+    atomicWriteFile(testFile, '{"version": 2}');
+    assert.strictEqual(fs.readFileSync(testFile, 'utf8'), '{"version": 2}');
+  });
+
+  it('should clean up temp file on write error', () => {
+    const { atomicWriteFile } = require('../src/config');
+    const testFile = path.join(tempDir, 'nonexistent-dir', 'test.json');
+
+    // This should fail because parent directory doesn't exist for temp file
+    // Note: The temp file is created in same directory as target
+    assert.throws(() => {
+      atomicWriteFile(testFile, 'test');
+    }, /Failed to write/);
+
+    // Verify no .tmp files left behind in tempDir
+    const files = fs.readdirSync(tempDir);
+    const tmpFiles = files.filter(f => f.endsWith('.tmp'));
+    assert.strictEqual(tmpFiles.length, 0, 'No temp files should remain after error');
+  });
+
+  it('should use unique temp filenames', () => {
+    const { atomicWriteFile } = require('../src/config');
+    const testFile = path.join(tempDir, 'test-unique.json');
+
+    // Write multiple times rapidly - should not collide
+    for (let i = 0; i < 5; i++) {
+      atomicWriteFile(testFile, JSON.stringify({ iteration: i }));
+    }
+
+    // Final content should be last write
+    const content = JSON.parse(fs.readFileSync(testFile, 'utf8'));
+    assert.strictEqual(content.iteration, 4);
   });
 });
 

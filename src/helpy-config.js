@@ -3,8 +3,7 @@
  */
 
 const fs = require('fs');
-const path = require('path');
-const { getHelpyConfigPath, getHelpyConfigDir } = require('./config');
+const { getHelpyConfigPath, getHelpyConfigDir, atomicWriteFile } = require('./config');
 
 /**
  * Read helpy's storage of disabled servers
@@ -50,10 +49,8 @@ function writeHelpyConfig(disabledServers) {
     }
   };
 
-  // Write atomically (write to temp, then rename)
-  const tempPath = `${configPath}.tmp`;
-  fs.writeFileSync(tempPath, JSON.stringify(config, null, 2), 'utf8');
-  fs.renameSync(tempPath, configPath);
+  // Write atomically with unique temp filename, retry logic, and cleanup
+  atomicWriteFile(configPath, JSON.stringify(config, null, 2));
 }
 
 /**

@@ -14,7 +14,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { getClaudeConfigPath } = require('./config');
+const { getClaudeConfigPath, atomicWriteFile } = require('./config');
 
 /**
  * Read Claude Code's global MCP configuration
@@ -99,10 +99,8 @@ function writeClaudeConfig(mcpServers) {
     mcpServers
   };
 
-  // Write atomically (write to temp, then rename)
-  const tempPath = `${configPath}.tmp`;
-  fs.writeFileSync(tempPath, JSON.stringify(newConfig, null, 2), 'utf8');
-  fs.renameSync(tempPath, configPath);
+  // Write atomically with unique temp filename, retry logic, and cleanup
+  atomicWriteFile(configPath, JSON.stringify(newConfig, null, 2));
 }
 
 /**
