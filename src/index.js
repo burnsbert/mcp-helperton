@@ -32,17 +32,23 @@ function updateStatus() {
   }
 }
 
+// Clean exit - destroy screen before exiting to restore terminal
+function cleanExit(code = 0) {
+  ui.screen.destroy();
+  process.exit(code);
+}
+
 // Handle quit
 function handleQuit() {
   if (appState.hasChanges) {
     showConfirm(
       ui,
       'Discard unsaved changes?',
-      () => process.exit(0),
+      () => cleanExit(0),
       () => {} // Do nothing, stay in app
     );
   } else {
-    process.exit(0);
+    cleanExit(0);
   }
 }
 
@@ -51,7 +57,7 @@ function handleSave() {
   try {
     appState = state.saveState(appState);
     setStatus(ui, 'Saved!', 'green');
-    setTimeout(() => process.exit(0), 500);
+    setTimeout(() => cleanExit(0), 500);
   } catch (error) {
     setStatus(ui, `Error: ${error.message}`, 'red');
   }
