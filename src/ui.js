@@ -8,11 +8,54 @@ const blessed = require('blessed');
  * Create the blessed screen and widgets
  * @returns {Object} Object containing screen and widget references
  */
+// Fix for blessed's tput.js dumping compiled JavaScript to stderr on startup
+//
+// PROBLEM: When blessed (v0.1.81) fails to compile certain terminfo capabilities
+// (e.g., xterm-256color's Setulc for underline color), it dumps diagnostic output
+// to stderr via console.error() in node_modules/blessed/lib/tput.js:1157-1161.
+// This output includes:
+//   1. "Error on <terminal>.<capability>:" message
+//   2. The raw terminfo capability string (JSON stringified)
+//   3. The compiled JavaScript code (showing "var v,", "stack.push", etc.)
+//   4. Empty lines for formatting
+//
+// WHY PREVIOUS FIX FAILED: We initially patched process.stdout.write, but blessed
+// uses console.error() which writes to stderr, not stdout.
+//
+// SOLUTION: Patch console.error() before requiring blessed to filter out these
+// specific error patterns while preserving legitimate error output.
+const originalConsoleError = console.error.bind(console);
+console.error = function(...args) {
+  const firstArg = args[0];
+  if (typeof firstArg === 'string') {
+    // Block "Error on %s:" printf-style format from tput.js:1158
+    if (firstArg === 'Error on %s:' || firstArg.startsWith('Error on ')) {
+      return;
+    }
+    // Block compiled JS code from tput.js:1161 (contains stack operations)
+    if (firstArg.includes('var v,') || firstArg.includes('stack.push') ||
+        firstArg.includes('out.push') || firstArg.includes('stack.pop')) {
+      return;
+    }
+    // Block JSON stringified terminfo strings from tput.js:1159
+    if (firstArg.startsWith('"\\u001b') || firstArg.startsWith('"\\x1b')) {
+      return;
+    }
+    // Block empty string formatting from tput.js:1157,1160
+    if (firstArg === '' && args.length === 1) {
+      return;
+    }
+  }
+  return originalConsoleError(...args);
+};
+
 function createUI() {
-  // Create screen
+  // Create screen with options to minimize terminal issues
   const screen = blessed.screen({
     smartCSR: true,
-    title: 'MCP Helpy Helperton'
+    title: 'MCP Helpy Helperton',
+    fullUnicode: true,
+    warnings: false
   });
 
   // Main container box

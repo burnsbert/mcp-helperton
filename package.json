@@ -1,6 +1,6 @@
 {
   "name": "mcp-helperton",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "MCP Helpy Helperton - A text-based UI for managing MCP servers in Claude Code",
   "main": "src/index.js",
   "bin": {
